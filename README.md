@@ -9,6 +9,8 @@
 ![Redis](https://img.shields.io/badge/Hot_Storage-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![Postgres](https://img.shields.io/badge/Cold_Storage-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Latency](https://img.shields.io/badge/P99_Latency-Under_10ms-success?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-v1.0.0-blue?style=for-the-badge)
+
 
 ---
 
