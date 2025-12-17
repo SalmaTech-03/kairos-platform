@@ -29,21 +29,21 @@ graph TD
     classDef cold fill:#f8f9fa,stroke:#6c757d,stroke-width:1px;
     classDef agent fill:#fff3cd,stroke:#ffc107,stroke-width:2px;
 
-    subgraph COLD_PLANE [Cold Plane (Batch & Training)]
+    subgraph COLD_PLANE ["Cold Plane (Batch & Training)"]
         A[Raw Ingestion] -->|Great Expectations| B(Postgres Warehouse)
         B -->|Time-Travel Join| C{Training Engine}
         C -->|Experiment Tracking| D[MLflow / XGBoost]
         B:::cold
     end
 
-    subgraph HOT_PLANE [Hot Plane (Real-Time Serving)]
+    subgraph HOT_PLANE ["Hot Plane (Real-Time Serving)"]
         B -->|Materialization ETL| E[(Redis Cluster)]
         E -->|HGETALL <1ms| F[Go Feature Server]
         E:::hot
         F:::hot
     end
 
-    subgraph INTELLIGENCE [Agentic Gateway]
+    subgraph INTELLIGENCE ["Agentic Gateway"]
         Client -->|gRPC / Protobuf| F
         F -->|JSON Response| Client
         Agent[Llama 3 Agent] -->|Tool Call| F
