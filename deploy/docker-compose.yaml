@@ -1,6 +1,5 @@
-version: '3.8'
-
 services:
+  #  Postgres
   postgres:
     image: postgres:15-alpine
     container_name: kairos-db
@@ -17,6 +16,7 @@ services:
       interval: 5s
       retries: 5
 
+  #  Redis
   redis:
     image: redis:7-alpine
     container_name: kairos-cache
@@ -25,6 +25,7 @@ services:
     volumes:
       - redis_data:/data
 
+  #  Jupyter
   jupyter:
     image: jupyter/scipy-notebook:latest
     container_name: kairos-lab
@@ -37,6 +38,7 @@ services:
       - ./../sdk:/home/jovyan/sdk
       - ./../data_pipelines:/home/jovyan/pipelines
 
+  #  Go Server
   go-server:
     build:
       context: ../
@@ -49,6 +51,29 @@ services:
     depends_on:
       - redis
 
+  #  MLflow (Using 'latest' to match your Python client)
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: kairos-mlflow
+    ports:
+      - "5000:5000"
+    command: mlflow server --backend-store-uri sqlite:////mlflow_store/mlflow.db --default-artifact-root /mlflow_store/artifacts --host 0.0.0.0
+    volumes:
+      - mlflow_storage:/mlflow_store
+
+  #  Redpanda
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: kairos-stream
+    ports:
+      - "9092:9092"
+    command:
+      - redpanda start
+      - --overprovisioned
+      - --smp 1 
+
+#  Storage Definitions
 volumes:
   postgres_data:
   redis_data:
+  mlflow_storage: # Docker manages this now

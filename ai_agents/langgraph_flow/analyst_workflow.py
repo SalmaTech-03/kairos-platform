@@ -1,82 +1,77 @@
-import os
-import sys
 import grpc
-from typing import Annotated, TypedDict
-from langgraph.graph import StateGraph, END
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+import sys
+import os
+from langchain_community.chat_models import ChatOllama
+from langchain_core.messages import SystemMessage, HumanMessage
 
-# Fix path for imports
+# Connect to SDK paths
 sys.path.append(os.getcwd())
 from sdk.kairos_sdk.core import kairos_pb2, kairos_pb2_grpc
 
-# --- 1. Define the Feature Store Tool ---
-def get_user_stats(user_id: str):
-    """
-    Fetches real-time transaction stats for a user from the Kairos Feature Store.
-    """
-    print(f"   [Tool] AI is calling Go Server for {user_id}...")
-    
-    channel = grpc.insecure_channel('localhost:50051')
-    stub = kairos_pb2_grpc.FeatureStoreServiceStub(channel)
-    
+def get_real_data(user_id):
+    """Tool: Fetches actual data from Go/Redis"""
     try:
+        channel = grpc.insecure_channel('localhost:50051')
+        stub = kairos_pb2_grpc.FeatureStoreServiceStub(channel)
         req = kairos_pb2.GetOnlineFeaturesRequest(
             feature_view_name="transaction_stats",
             entity_id=user_id,
             feature_names=["amount", "is_fraud", "timestamp"]
         )
         resp = stub.GetOnlineFeatures(req)
-        return str(resp.values) # Return data as string for the LLM
-    except Exception as e:
-        return f"Error: {str(e)}"
+        return resp.values
+    except:
+        return None
 
-# --- 2. The Agent Logic (The Brain) ---
-class AgentState(TypedDict):
-    messages: list[str]
-
-def analyst_node(state: AgentState):
-    """
-    Decides whether to call the tool or answer.
-    """
-    last_message = state['messages'][-1]
+def run_real_agent():
+    print(" Initializing Local Llama 3 Agent...")
     
-    # Simple Keyword Logic (Simulating an LLM decision)
-    if "user_" in last_message and "check" in last_message.lower():
-        # Extract user_id (simple parsing)
-        words = last_message.split()
-        user_id = next((w for w in words if w.startswith("user_")), None)
-        
-        if user_id:
-            # CALL THE TOOL
-            data = get_user_stats(user_id)
-            
-            # GENERATE INSIGHT
-            if "'is_fraud': '1'" in data:
-                insight = f" ALERT: {user_id} has a fraud flag! Transaction amount: {data}."
-            else:
-                insight = f" CLEAN: {user_id} looks safe. Recent activity: {data}."
-            
-            return {"messages": state['messages'] + [insight]}
-    
-    return {"messages": state['messages'] + ["I need a user ID (e.g., user_1001) to check for fraud."]}
+    # 1. Connect to Local LLM
+    try:
+        llm = ChatOllama(model="llama3", temperature=0)
+    except:
+        print(" Error: Is Ollama running? Run 'ollama run llama3' in a separate terminal.")
+        return
 
-# --- 3. Build the Graph ---
-workflow = StateGraph(AgentState)
-workflow.add_node("analyst", analyst_node)
-workflow.set_entry_point("analyst")
-workflow.add_edge("analyst", END)
+    print("   Ready. Ask me about a user (e.g. 'Audit user_1001'). Type 'exit' to quit.")
 
-app = workflow.compile()
-
-# --- 4. Run the Chat Loop ---
-if __name__ == "__main__":
-    print(" Kairos AI Analyst Ready! (Type 'quit' to exit)")
-    print("   Try asking: 'Check user_1001 please'")
-    
     while True:
         user_input = input("\nYou: ")
-        if user_input.lower() in ["quit", "exit"]:
-            break
+        if user_input.lower() in ["exit", "quit"]: break
+
+        # 2. Logic: Extract User ID manually (to save token complexity for this demo)
+        # In a full LangGraph, the LLM would do this tool calling itself.
+        import re
+        match = re.search(r"user_\d+", user_input)
         
-        result = app.invoke({"messages": [user_input]})
-        print(f"AI:  {result['messages'][-1]}")
+        context_data = ""
+        if match:
+            uid = match.group(0)
+            print(f"   ( Agent detected {uid}, fetching live data...)")
+            data = get_real_data(uid)
+            if data:
+                context_data = f"DATA CONTEXT FOR {uid}: Amount=${data.get('amount')}, FraudFlag={data.get('is_fraud')}, Time={data.get('timestamp')}"
+            else:
+                context_data = f"DATA CONTEXT: User {uid} not found in database."
+
+        # 3. Prompt the Real AI
+        # We inject the Real Data into the prompt so the AI can "Reason" about it.
+        prompt = f"""
+        You are a Senior Fraud Analyst. 
+        User Question: "{user_input}"
+        
+        {context_data}
+        
+        If you have data, analyze it. 
+        - If FraudFlag is 1, be alarmed. 
+        - If Amount > 200, mention it's high.
+        - If no data, say so.
+        Keep it professional and concise.
+        """
+        
+        print("   ( Llama 3 is thinking...)")
+        response = llm.invoke([HumanMessage(content=prompt)])
+        print(f"AI: {response.content}")
+
+if __name__ == "__main__":
+    run_real_agent()
