@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: kairos-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: kairos_core
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d kairos_core"]
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: kairos-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  jupyter:
+    image: jupyter/scipy-notebook:latest
+    container_name: kairos-lab
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_TOKEN=kairos
+    volumes:
+      - ./../ai_agents/notebooks:/home/jovyan/work
+      - ./../sdk:/home/jovyan/sdk
+      - ./../data_pipelines:/home/jovyan/pipelines
+
+  go-server:
+    build:
+      context: ../
+      dockerfile: services/go-feature-server/Dockerfile
+    container_name: kairos-server
+    ports:
+      - "50051:50051"
+    environment:
+      - REDIS_ADDR=kairos-cache:6379
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,12 @@
+# Configurations for LLMs used by AutoGen and LangChain
+default_model: gpt-4-turbo
+temperature: 0.0
+
+models:
+  gpt-4-turbo:
+    api_type: openai
+    max_tokens: 4000
+  
+  llama3-local:
+    api_type: ollama
+    base_url: http://localhost:11434/v1

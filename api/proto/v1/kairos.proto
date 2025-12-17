@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package kairos.v1;
+
+option go_package = "github.com/kairos-platform/services/go-feature-server/pb;kairospb";
+
+// --- 1. Core Data Structures ---
+
+message FeatureView {
+    string name = 1;         // e.g. "user_transaction_stats"
+    string project = 2;      // e.g. "fraud_detection"
+    string entity_name = 3;  // e.g. "user_id"
+    repeated Feature features = 4;
+}
+
+message Feature {
+    string name = 1;
+    string dtype = 2;        // INT64, FLOAT, STRING
+}
+
+// --- 2. Service Definition (The Go Server) ---
+
+service FeatureStoreService {
+    // Used by the Python SDK to fetch features for Model Inference
+    rpc GetOnlineFeatures(GetOnlineFeaturesRequest) returns (GetOnlineFeaturesResponse);
+}
+
+message GetOnlineFeaturesRequest {
+    string feature_view_name = 1;
+    string entity_id = 2;              // e.g. "user_1001"
+    repeated string feature_names = 3; // e.g. ["total_spend_7d", "fraud_score"]
+}
+
+message GetOnlineFeaturesResponse {
+    // Returns map: {"total_spend_7d": "500.20", "fraud_score": "0.1"}
+    map<string, string> values = 1; 
+}

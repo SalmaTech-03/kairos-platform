@@ -1,0 +1,39 @@
+name: Build Go Server
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+
+    - name: Install Protobuf Compiler
+      run: sudo apt-get install -y protobuf-compiler
+
+    - name: Install Go Proto Plugins
+      run: |
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.4.0
+
+    - name: Generate Protobufs
+      run: |
+        protoc --go_out=. --go-grpc_out=. api/proto/v1/kairos.proto
+        # Move generated pb folder to correct location
+        cp -r github.com/kairos-platform/services/go-feature-server/pb services/go-feature-server/
+
+    - name: Build
+      working-directory: ./services/go-feature-server
+      run: |
+        go get google.golang.org/grpc@v1.64.0
+        go mod tidy
+        go build -v ./cmd/main.go

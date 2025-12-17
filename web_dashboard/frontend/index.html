@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kairos | Enterprise Feature Store</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-layer-group"></i> KAIROS
+            </div>
+            <nav class="nav-links">
+                <a href="#" class="active" onclick="showTab('dashboard')"><i class="fa-solid fa-chart-line"></i> Overview</a>
+                <a href="#" onclick="showTab('inference')"><i class="fa-solid fa-bolt"></i> Live Inference</a>
+                <a href="#" onclick="showTab('ai-analyst')"><i class="fa-solid fa-robot"></i> AI Analyst</a>
+                <a href="#" onclick="showTab('registry')"><i class="fa-solid fa-database"></i> Feature Registry</a>
+            </nav>
+            <div class="server-status">
+                <div class="status-indicator"></div>
+                <span>System Online</span>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header>
+                <h1 id="page-title">Platform Overview</h1>
+                <div class="user-profile">
+                    <span>Admin User</span>
+                    <div class="avatar">AD</div>
+                </div>
+            </header>
+
+            <!-- TAB: DASHBOARD -->
+            <section id="dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <h3>Total Features Served</h3>
+                        <div class="value">1,204,592</div>
+                        <div class="trend up">+12% this week</div>
+                    </div>
+                    <div class="card stat-card">
+                        <h3>Avg Latency (p99)</h3>
+                        <div class="value">8.4 ms</div>
+                        <div class="trend down">-2ms improvement</div>
+                    </div>
+                    <div class="card stat-card">
+                        <h3>Active Entities</h3>
+                        <div class="value">10,042</div>
+                        <div class="trend neutral">Stable</div>
+                    </div>
+                </div>
+                
+                <div class="card chart-container">
+                    <h3>Real-time Throughput (RPS)</h3>
+                    <div class="fake-chart">
+                        <!-- CSS Generated Bars -->
+                        <div class="bar" style="height: 40%"></div>
+                        <div class="bar" style="height: 70%"></div>
+                        <div class="bar" style="height: 50%"></div>
+                        <div class="bar" style="height: 90%"></div>
+                        <div class="bar" style="height: 60%"></div>
+                        <div class="bar" style="height: 80%"></div>
+                        <div class="bar" style="height: 45%"></div>
+                        <div class="bar" style="height: 75%"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: LIVE INFERENCE -->
+            <section id="inference" class="tab-content">
+                <div class="inference-layout">
+                    <div class="card input-card">
+                        <h3><i class="fa-brands fa-golang"></i> gRPC Request</h3>
+                        <div class="form-group">
+                            <label>Entity ID (User)</label>
+                            <input type="text" id="entityIdInput" value="user_1001" placeholder="e.g. user_1001">
+                        </div>
+                        <div class="form-group">
+                            <label>Feature View</label>
+                            <input type="text" value="transaction_stats" disabled>
+                        </div>
+                        <button class="btn-primary" onclick="fetchFeatures()">Fetch Vector</button>
+                    </div>
+
+                    <div class="card output-card">
+                        <h3><i class="fa-solid fa-code"></i> JSON Response</h3>
+                        <pre id="jsonOutput">// Waiting for request...</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: AI ANALYST -->
+            <section id="ai-analyst" class="tab-content">
+                <div class="chat-interface">
+                    <div class="chat-window" id="chatWindow">
+                        <div class="message ai">
+                            <div class="bubble">Hello! I am the Kairos AI Analyst. I can query the feature store for you. Try asking "Check fraud risk for user_1001".</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Ask a question about your data..." onkeypress="handleChat(event)">
+                        <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

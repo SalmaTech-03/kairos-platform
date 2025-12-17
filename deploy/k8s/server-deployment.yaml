@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kairos-server
+  labels:
+    app: kairos-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kairos-server
+  template:
+    metadata:
+      labels:
+        app: kairos-server
+    spec:
+      containers:
+      - name: kairos-server
+        image: kairos-server:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50051
+        env:
+        - name: REDIS_ADDR
+          value: "kairos-redis-service:6379" # Connects to K8s Service
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kairos-server-service
+spec:
+  selector:
+    app: kairos-server
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: LoadBalancer

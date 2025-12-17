@@ -1,0 +1,22 @@
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kairos_sdk"
+version = "0.1.0"
+description = "Python Client for the Kairos Feature Store"
+authors = [{name = "Your Name", email = "you@example.com"}]
+dependencies = [
+    "grpcio>=1.64.0",
+    "grpcio-tools>=1.64.0",
+    "protobuf>=4.25.0",
+    "pandas>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "redis>=5.0.0"
+]
+
+[project.scripts]
+kairos = "kairos_sdk.cli:main"

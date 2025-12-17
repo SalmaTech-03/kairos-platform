@@ -1,0 +1,18 @@
+project: kairos_fraud_detection
+metadata_store:
+  type: postgres
+  host: localhost
+  port: 5432
+  user: admin
+  password: password
+  database: kairos_core
+
+online_store:
+  type: redis
+  host: localhost
+  port: 6379
+
+offline_store:
+  type: bigquery
+  project_id: kairos-platform-123
+  dataset_id: fraud_data

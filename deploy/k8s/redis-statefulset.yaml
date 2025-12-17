@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kairos-redis
+spec:
+  serviceName: "kairos-redis-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kairos-redis
+  template:
+    metadata:
+      labels:
+        app: kairos-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kairos-redis-service
+spec:
+  selector:
+    app: kairos-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379

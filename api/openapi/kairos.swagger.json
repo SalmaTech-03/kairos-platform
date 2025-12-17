@@ -1,0 +1,49 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Kairos Feature Store API",
+    "description": "gRPC Gateway for serving ML features.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v1/get-online-features": {
+      "post": {
+        "summary": "Fetch real-time features",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "feature_view_name": { "type": "string", "example": "transaction_stats" },
+                  "entity_id": { "type": "string", "example": "user_1001" },
+                  "feature_names": { 
+                    "type": "array", 
+                    "items": { "type": "string" },
+                    "example": ["amount", "is_fraud"] 
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "values": { "type": "object", "additionalProperties": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
